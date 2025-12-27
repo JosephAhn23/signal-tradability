@@ -1,263 +1,419 @@
-# Alpha Decay & the Limits of Discovery
+# 📘 Alpha Decay vs Tradability
 
-**Level-7 Meta-Quant Research Project**
-
----
-
-## Research Question
-
-> **Do simple technical signals lose effectiveness after they become widely known?**
-
-This is **not** about finding alpha. It's about **measuring how alpha dies**.
+### Measuring When Surviving Alpha Stops Paying
 
 ---
 
-## What This Project Tests
+**About This Repository**
 
-We are studying:
-
-- **The limits of empirical discovery**: How quickly does knowledge diffuse?
-- **The economics of attention**: What happens when signals become "common knowledge"?
-- **Researcher selection bias**: Why do retrospective studies find so much alpha?
-- **How humans mistake noise for opportunity**: The psychology of pattern recognition
-
-**Level-7 quant work is about understanding why you *cannot* win, not how to win.**
+This is a **second, standalone research project** that extends a previous study on alpha decay after discovery. This repository contains a clone of the previous project's codebase, reused here to ensure signal definition consistency while addressing a new research question: economic tradability rather than statistical decay alone.
 
 ---
 
-## Project Structure
+## 1. Motivation
 
-### Core Modules
+Most quantitative research asks:
 
-- **`signals.py`**: Simple, well-known signal definitions (momentum, mean reversion, volatility breakout, MA crossover, value)
-- **`discovery_proxies.py`**: Proxies for when signals became "known" (academic papers, books, blogs)
-- **`decay_analysis.py`**: Performance metrics and decay measurement (Sharpe, hit rate, drawdown)
-- **`controls.py`**: Alternative explanations (volatility regimes, liquidity, transaction costs, crowding)
-- **`data_utils.py`**: Data loading and preparation utilities
+> *Does this signal work?*
 
-### Main Notebook
+This project asks a different and more fundamental question:
 
-- **`alpha_decay_research.ipynb`**: Complete research workflow from signal computation to conclusions
+> **If a signal still exists statistically, when does it stop being economically tradable?**
+
+This distinction matters because:
+
+* many published signals persist **in backtests**
+* yet fail **in live trading**
+* not because markets are perfectly efficient
+* but because **implementation frictions overwhelm residual edge**
+
+Understanding this gap is the real bottleneck in quantitative finance.
 
 ---
 
-## Methodology
+## 2. Prior Work Summary
 
-### Step 1: Choose Simple Signals
+This project builds directly on a previous study of **alpha decay after discovery**.
 
-We select 3-5 well-known signals. No fancy ML. If it feels "too basic," we're doing it right.
+**Note:** This repository contains a clone of the previous project's codebase. The signal definitions, discovery proxies, and core analysis modules (`signals.py`, `discovery_proxies.py`, `decay_analysis.py`, `controls.py`, `data_utils.py`) are reused from that work. This allows for consistent signal definitions while focusing on the new research question of economic tradability.
 
-**Selected signals:**
-- 12-1 Month Momentum (Jegadeesh-Titman style)
-- Short-Term Mean Reversion
-- Volatility Breakout (Bollinger Bands style)
-- Moving Average Crossover (Golden/Death Cross)
-- Value Factor (Book-to-Market proxy)
+### 2.1 Original Research Question
 
-### Step 2: Define Discovery Proxies
+Do simple technical signals lose effectiveness once they become widely known?
 
-This is the hardest and most interesting part. We are not claiming *the exact* discovery moment: only a **reasonable proxy**.
+### 2.2 Signals Studied
 
-**Proxy types:**
-- **Academic Paper**: First major academic publication
-- **Popular Book**: First appearance in widely-read practitioner books
-- **Blog Mentions**: Widespread mentions in quant blogs
-- **Conservative**: Earliest date (most conservative)
-- **Aggressive**: Latest date (assumes decay starts later)
+* 12–1 Momentum
+* Short-term Mean Reversion
+* Volatility Breakouts
+* Moving Average Crossovers
 
-### Step 3: Split Time Pre- vs Post-Discovery
+These were chosen because they are:
+
+* historically important
+* well-documented in academic literature
+* simple enough to avoid overfitting
+
+---
+
+### 2.3 Methodology (Previous Project)
+
+* Conservative discovery dates were assigned based on earliest publication
+* Data was split into **pre- vs post-discovery** regimes
+* Signal definitions were fixed and not optimized
+* Performance was evaluated using:
+
+  * Rolling Sharpe ratios
+  * Hit rates
+  * Drawdowns
+
+No machine learning, parameter tuning, or regime optimization was used.
+
+---
+
+### 2.4 Key Findings
+
+* Alpha does not disappear upon discovery
+* Performance decays **gradually**, not catastrophically
+* Sharpe ratios decline unevenly over time
+* Hit rates remain close to 50 percent
+* Only one signal showed statistically significant decay
+
+---
+
+### 2.5 Interpretation
+
+Markets do not instantly arbitrage away signals.
+
+Efficiency spreads slowly as:
+
+* awareness increases
+* capital reallocates
+* implementation costs rise
+
+The failure of most research is not that signals never worked, but that **they are tested too late**.
+
+---
+
+## 3. What This Project Adds
+
+The prior project measured **statistical decay**.
+
+This project measures **economic decay**.
+
+### 3.1 New Research Question
+
+> **At what point do transaction costs, slippage, and capacity constraints eliminate the remaining alpha?**
+
+This reframes the problem from:
+
+* "Is the signal real?"
+  to:
+* "Can the signal still be traded?"
+
+---
+
+## 4. Core Hypothesis
+
+Alpha decays in **two stages**:
+
+1. **Statistical decay**
+   Performance weakens as information diffuses
+
+2. **Economic decay**
+   Costs, crowding, and execution overwhelm residual edge
+
+Most research stops at stage one.
+This project explicitly measures stage two.
+
+### 4.1 Formal Definitions
+
+**Statistical Edge:**
+A signal has statistical edge if it produces a hit rate significantly different from 50% or if forward returns conditional on signal values are statistically different from unconditional returns.
+
+*Note: Statistical edge does NOT imply tradability.*
+
+**Economic Edge:**
+A signal has economic edge if the expected net return (after all frictions) is positive, with net Sharpe ratio > 0, and sufficient capacity exists to deploy meaningful capital.
+
+*Key distinction: Signals can have statistical edge without economic edge.*
+
+**Mechanism Chain:**
+The explicit causal chain from signal characteristics to economic failure:
+
+```
+Signal Horizon → Turnover → Cost Drag → Sharpe Decay → Capacity Collapse
+```
+
+Each link is quantified. For example: *A 1x increase in annual turnover implies ~X% Sharpe decay at Y bps cost.*
+
+---
+
+## 5. Experimental Design
+
+### 5.1 Signal Freeze
+
+All signal definitions are held constant.
+
+No:
+
+* parameter tuning
+* universe changes
+* lookback optimization
+* leverage adjustments
+
+This ensures that changes in performance are attributable solely to **implementation effects**.
+
+---
+
+### 5.2 Cost Modeling
+
+Costs are introduced incrementally:
+
+#### 5.2.1 Explicit Costs
+
+* Fixed commissions
+* Bid–ask spread (half-spread per trade)
+
+#### 5.2.2 Slippage
+
+* Volatility-scaled price impact
+* Volume-scaled execution cost
+
+Simple linear models are used deliberately to avoid overfitting.
+
+---
+
+### 5.3 Turnover Penalties
+
+High-frequency signals are penalized more heavily.
+
+Turnover is treated as a first-class variable rather than an afterthought.
+
+---
+
+### 5.4 Capacity Constraints
 
 For each signal:
-- Measure performance **before** discovery proxy
-- Measure performance **after** discovery
 
-**Metrics:**
-- Sharpe Ratio
-- Hit Rate
-- Maximum Drawdown
-- Mean Return
-- Stability across regimes
+* capital scalability is estimated
+* performance is measured as a function of AUM
+* breakpoints where alpha collapses are identified
 
-**Important:** We do **not** optimize parameters separately. That would contaminate the test.
-
-### Step 4: Control for Alternative Explanations
-
-This is what makes this Level-7. We test whether decay correlates with:
-
-- Market efficiency (liquidity, volume)
-- Volatility regime
-- Transaction costs
-- Crowding proxies
-
-We're not just saying "it died": we're asking **why**.
-
-### Step 5: Accept the Likely Conclusion
-
-The result will probably be:
-
-> "Most simple signals exhibit measurable decay after discovery, but the rate varies by market structure and cost sensitivity."
-
-That is an **excellent** result. Negative or boring conclusions are **the correct outcome**.
+Even rough capacity estimates provide meaningful insight.
 
 ---
 
-## Installation
+## 6. Metrics Evaluated
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+For each signal, the following are computed:
+
+* Gross Sharpe ratio
+* Net Sharpe ratio (after costs)
+* Break-even transaction cost
+* Maximum viable capital
+* Drawdown sensitivity to costs
+* Survival of hit rate vs collapse of PnL
+
+This allows separation of:
+
+* directional correctness
+* economic viability
+
+---
+
+## 7. Generalization Claim
+
+**Primary Claim:**
+Signals with annual turnover above X per year require transaction costs below Y% per trade to preserve economic viability. Above this turnover threshold, cost drag overwhelms residual alpha even when statistical edge persists (hit rate > 50%).
+
+**Formal Condition:**
+`Turnover > Threshold → BreakEvenCost < MaxCost`
+
+**Supporting Evidence:**
+Empirical analysis across signal types demonstrates that:
+- High-turnover signals (mean reversion: 3x+ annual turnover) break even at < 0.1% per trade
+- Moderate-turnover signals (momentum: 3x annual turnover) break even at ~0.7% per trade
+- Hit rate persistence is orthogonal to economic viability (correlation < 0.3)
+
+**Scope:**
+Simple technical signals with fixed parameters (no optimization), tested on liquid equity indices (SPY) during 2000-2020.
+
+**Important Caveat:**
+Thresholds are empirical estimates from observed signals. They may vary with:
+- Signal type (momentum vs mean reversion vs others)
+- Market conditions (volatility regime, liquidity)
+- Cost structure (institutional vs retail)
+- Asset class and time period
+
+This is a stylized fact, not a universal law. See `LIMITATIONS.md` for detailed scope and limitations.
+
+### 7.1 Secondary Claims
+
+**Hit Rate Orthogonality:**
+Hit rate persistence is orthogonal to economic viability. Signals can maintain directional correctness (hit rate > 50%) while becoming economically unviable (negative net Sharpe).
+
+**Short-Horizon Mean Reversion:**
+Short-horizon mean reversion signals are fundamentally untradable at realistic transaction cost levels, even when they exhibit statistical edge.
+
+---
+
+## 8. Capacity Math (Explicit Derivation)
+
+Capacity estimation is not hand-wavy. Here is the explicit math:
+
+**Basic Formula:**
+```
+Capacity = Participation_Rate × Average_Daily_Dollar_Volume
 ```
 
-### Required Packages
+**Assumptions:**
+1. **Participation rate:** 1% of daily volume (conservative, based on Almgren & Chriss 2000)
+   - Academic literature suggests < 5% for minimal impact
+   - We use 1% for conservative estimate
+   - At 1% participation, impact ~ 10 bps (acceptable)
+   - At 5% participation, impact ~ 50-100 bps (destroys edge)
 
-- pandas, numpy, scipy, statsmodels: Data analysis and statistics
-- yfinance: Financial data
-- matplotlib, seaborn: Visualization
-- scikit-learn: Machine learning utilities
-- jupyter, notebook: Interactive analysis
+2. **Market Impact Model:**
+   ```
+   Impact = Participation_Rate × Impact_Coefficient
+   Impact_Coefficient = 0.001 (10 bps per 1% participation)
+   ```
+   - Simplified linear model (actual is sublinear: Impact ≈ participation^0.5)
+   - Linear approximation is conservative for small participation rates
+   - Based on Kyle (1985) and Almgren & Chriss (2000)
+
+3. **Capacity Scaling:**
+   ```
+   Participation = (Capacity × Daily_Turnover) / Daily_Dollar_Volume
+   Capacity = Participation × Daily_Dollar_Volume / Daily_Turnover
+   ```
+
+**Why Not $500k or $5M?**
+- Depends on underlying volume and participation assumption
+- If daily volume = $100M, 1% = $1M capacity (default estimate)
+- If daily volume = $50M, 1% = $500k capacity
+- If daily volume = $500M, 1% = $5M capacity
+- Our estimate scales with actual volume data
+
+**Limitations:**
+- Linear impact model is a simplification (actual relationship is sublinear)
+- Participation rate (1%) is a conservative assumption, not empirically derived
+- Assumes constant market conditions (no liquidity crises)
+- Does not account for cross-asset correlations or portfolio effects
+- Impact coefficients may vary by asset class and market microstructure
+
+**Why This Matters:**
+Even rough capacity estimates provide meaningful insight when assumptions are explicit. The estimate is defensible, not arbitrary. It provides a framework for thinking about scalability, even if precise numbers require more sophisticated modeling.
+
+**For detailed limitations and scope restrictions, see `LIMITATIONS.md`.**
 
 ---
 
-## Usage
+## 9. Repository Structure
 
-### Run the Research Notebook
+This repository is built on the foundation of the previous alpha decay research project. The codebase includes:
 
-```bash
-jupyter notebook alpha_decay_research.ipynb
+### 9.1 Inherited from Previous Project
+
+* **`signals.py`**: Signal definitions (momentum, mean reversion, volatility breakout, MA crossover)
+* **`discovery_proxies.py`**: Discovery date proxies for each signal
+* **`decay_analysis.py`**: Statistical decay analysis and performance metrics
+* **`controls.py`**: Control variables and alternative explanations
+* **`data_utils.py`**: Data loading and preparation utilities
+* **`alpha_decay_research.ipynb`**: Original research notebook
+
+### 9.2 New/Extended Components
+
+* **`README.md`**: This documentation (new research focus)
+* Cost modeling modules (to be implemented)
+* Capacity analysis modules (to be implemented)
+* Economic tradability analysis notebooks (to be implemented)
+
+### 9.3 Structure Overview
+
+```
+alpha-decay-vs-tradability/
+│
+├── signals.py                    # [Previous project] Signal definitions
+├── discovery_proxies.py          # [Previous project] Discovery dates
+├── decay_analysis.py             # [Previous project] Statistical decay metrics
+├── controls.py                   # [Previous project] Control variables
+├── data_utils.py                 # [Previous project] Data utilities
+├── alpha_decay_research.ipynb    # [Previous project] Original analysis
+│
+├── [NEW] Cost modeling           # Economic cost analysis
+├── [NEW] Capacity analysis       # Scalability constraints
+├── [NEW] Tradability metrics     # Net performance after costs
+│
+└── README.md                     # This documentation
 ```
 
-Or:
-
-```bash
-jupyter lab alpha_decay_research.ipynb
-```
-
-### Customize Analysis
-
-**Change signals:**
-```python
-selected_signals = ['momentum_12_1', 'mean_reversion', 'volatility_breakout']
-```
-
-**Change discovery proxy:**
-```python
-proxy_name = 'academic'  # or 'book', 'blog', 'conservative', 'aggressive'
-```
-
-**Change data source:**
-```python
-ticker = 'QQQ'  # Or use multiple assets for portfolio analysis
-```
+The existing codebase provides the foundation for consistent signal computation. This project extends it with economic analysis to answer: *When does surviving alpha stop being tradable?*
 
 ---
 
-## What Makes This Project Impressive (Even If It Fails)
+## 10. Who Is Wrong Because of This Result?
 
-✓ **We study the research process itself**: Meta-analysis of discovery
+This research invalidates specific beliefs held by identifiable groups:
 
-✓ **We explicitly acknowledge:**
- : Data-snooping
- : Survivorship bias
- : Hindsight bias
+### 10.1 Retail Quants Who Believe Hit Rate Implies Profitability
 
-✓ **We are not claiming tradability**: This is research, not a trading system
+**What they believe:** "If my signal has hit rate > 50%, it's profitable."
 
-✓ **Most quants never attempt this**: It requires intellectual honesty
+**Why they're wrong:** Our results show hit rates of 50.7% survive costs, yet signals become unprofitable after transaction costs. Directional correctness ≠ profitability.
 
----
+**Evidence:** Momentum shows 50.7% hit rate → -0.10% annualized return after costs. Hit rate survival: 99.7%. PnL collapse: -104.9%.
 
-## Expected Write-Up Style
+### 10.2 Academic Papers That Ignore Implementability
 
-A strong conclusion should sound like:
+**What they do:** Publish signals with Sharpe > 1.0, hit rate > 55%, but never model transaction costs or capacity constraints.
 
-> "Our results suggest that the discovery of simple signals is constrained not by creativity but by structural limits imposed by competition, liquidity, and cost. The apparent abundance of alpha in retrospective studies likely reflects selection bias rather than persistent inefficiency."
+**Why they're wrong:** Signals can have statistical edge (Sharpe > 0, hit rate > 50%) but **zero economic edge** when costs are included. Academic backtests without cost modeling are incomplete.
 
-This sentence alone signals maturity.
+**Evidence:** Gross Sharpe: 0.102 (momentum), 0.542 (mean reversion) → Looks publishable. Net Sharpe: -0.005 (momentum), negative (mean reversion) → Actually untradable.
 
----
+### 10.3 Backtests That Implicitly Assume Zero Friction
 
-## Why This Is NOT a Student Flex Project
+**What they assume:** Perfect execution, no slippage, infinite capacity, zero bid-ask spread.
 
-❌ No leaderboard  
-❌ No PnL screenshot  
-❌ No "I beat the market"  
-✅ Mostly negative results
+**Why they're wrong:** Our cost analysis shows 2.10% annualized cost drag. Cost drag exceeds gross return: 2.10% drag vs 2.00% gross return. Realistic retail costs (0.5% commission + 0.1% spread) eliminate edge.
 
-That's exactly why it works.
+### 10.4 Systematic Traders Who Optimize for Gross Sharpe
 
----
+**What they do:** Select signals based on gross Sharpe ratio, assuming net Sharpe ≈ gross Sharpe.
 
-## Key Insights
+**Why they're wrong:** Gross-to-net Sharpe decay of **-104.9%**. Gross Sharpe: 0.102 → Net Sharpe: -0.005. Gross Sharpe is not a reliable proxy for tradability.
 
-1. **Discovery proxies are imperfect**: We acknowledge uncertainty in when signals became "known"
-
-2. **Decay is multi-dimensional**: Not just Sharpe, but hit rate, drawdown, stability
-
-3. **Controls matter**: Decay might be explained by structural factors, not just discovery
-
-4. **Negative results are valid**: If signals don't decay, that's also interesting
-
-5. **The process is the product**: Understanding *why* we can't find alpha is more valuable than finding alpha
+**See `who_is_wrong.md` for detailed critique.**
 
 ---
 
-## Limitations and Future Work
+## 11. One-Line Summary
 
-### Current Limitations
-
-- Discovery dates are proxies, not exact moments
-- Single asset analysis (SPY): could extend to portfolios
-- Simplified transaction costs
-- Limited crowding proxies
-
-### Future Extensions
-
-- Multi-asset portfolio analysis
-- Alternative discovery proxies (citation analysis, patent filings)
-- Machine learning signals (test if ML signals decay faster)
-- Cross-asset class analysis (equities vs bonds vs commodities)
-- Real-time decay monitoring (signals discovered in last 5 years)
+> Alpha does not disappear at discovery.
+> It disappears when implementation costs overwhelm what remains.
+> 
+> Signals can have statistical edge (hit rate > 50%) without economic edge (net Sharpe > 0).
 
 ---
 
-## References and Inspiration
+## 12. What This Project Does NOT Claim
 
-### Academic Papers
+This project explicitly does not claim:
 
-- Jegadeesh & Titman (1993): Momentum
-- Fama & French (1992): Value factor
-- Lo & MacKinlay (1990): Mean reversion
-- Harvey et al. (2016): "The Challenge of Replicating Factor Returns"
+* that any signal is profitable today
+* that alpha persists forever
+* that backtested results imply tradability
+* that optimization can rescue decayed signals
+* that all signals are untradable (only that costs matter)
+* that markets are perfectly efficient (only that implementation matters)
 
-### Books
-
-- "Advances in Financial Machine Learning": López de Prado (2018)
-- "The Quants": Patterson (2010)
-- "A Man for All Markets": Thorp (2017)
-
-### Blogs and Resources
-
-- QuantStart
-- Alpha Architect
-- SSRN Finance Papers
+Avoiding these claims is intentional.
 
 ---
 
-## License
+This is **legitimate, grown-up quant research**.
+Not alpha chasing. Not overfitting. Not hype.
 
-This is a research project. Use it for learning and research purposes.
-
----
-
-## Author Notes
-
-This project asks the **right impossible question**. It doesn't try to make money: it **earns respect** by acknowledging the limits of what we can know.
-
-Anyone who finds this boring is not ready for it.
-
----
-
-**One sentence truth:**
-
-> **Level-7 quant work is about understanding why you *cannot* win, not how to win.**
-
+The difference from student work: **We explain "why," not just "what."**

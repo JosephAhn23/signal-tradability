@@ -20,4 +20,5 @@ tqdm>=4.65.0
 # Documentation
 jupyter>=1.0.0
 notebook>=7.0.0
+reportlab>=4.0.0
 
